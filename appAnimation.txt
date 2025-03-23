@@ -1,0 +1,285 @@
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { AnimatePresence, motion } from 'framer-motion';
+import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import Layout from './components/Layout';
+import Overview from './pages/Overview';
+import ViewStatus from './pages/ViewStatus';
+import AddCandidate from './pages/AddCandidate';
+import Settings from './pages/Settings';
+import Login from './pages/Login';
+import { useAuth } from './contexts/AuthContext';
+
+const LoadingScreen = () => (
+  <div className="fixed inset-0 bg-background flex items-center justify-center">
+    <div className="relative">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center"
+      >
+        <motion.div
+          className="w-24 h-24 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 relative"
+          animate={{
+            rotateY: [0, 180, 360],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        >
+          <BuildingOfficeIcon className="w-12 h-12 text-primary" />
+          <motion.div
+            className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/20 to-transparent"
+            animate={{
+              opacity: [0, 1, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </motion.div>
+        <motion.div
+          className="h-2 w-32 bg-background-lighter rounded-full overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary/50 to-primary"
+            animate={{
+              x: ["-100%", "100%"],
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </motion.div>
+      </motion.div>
+    </div>
+  </div>
+);
+
+const PageTransition = ({ children }) => {
+  const location = useLocation();
+  
+  return (
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0, y: 0, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{
+        duration: 0.3,
+        ease: [0.4, 0.0, 0.2, 1],
+      }}
+      className="w-full"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          ease: [0.4, 0.0, 0.2, 1],
+          delay: 0.1,
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? (
+    <PageTransition>{children}</PageTransition>
+  ) : (
+    <Navigate to="/login" />
+  );
+};
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route 
+          path="/login" 
+          element={
+            isAuthenticated ? (
+              <Navigate to="/" />
+            ) : (
+              <PageTransition>
+                <Login />
+              </PageTransition>
+            )
+          } 
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Overview />} />
+          <Route path="status" element={<ViewStatus />} />
+          <Route path="add-candidate" element={<AddCandidate />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <Suspense fallback={<LoadingScreen />}>
+            <div className="min-h-screen bg-gradient-to-br from-background via-background to-background-lighter text-white">
+              <AppContent />
+            </div>
+          </Suspense>
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
+  );
+}
+
+export default App;
+
+
+
+
+----------------------------------
+
+
+
+
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { AnimatePresence, motion } from 'framer-motion';
+import Layout from './components/Layout';
+import Overview from './pages/Overview';
+import ViewStatus from './pages/ViewStatus';
+import AddCandidate from './pages/AddCandidate';
+import Settings from './pages/Settings';
+import Login from './pages/Login';
+import { useAuth } from './contexts/AuthContext';
+
+// Loading component with 3D animation
+const LoadingScreen = () => (
+  <div className="fixed inset-0 bg-background flex items-center justify-center">
+    <motion.div
+      initial={{ rotateX: 0, scale: 1 }}
+      animate={{ 
+        rotateX: 360,
+        scale: [1, 1.2, 1],
+      }}
+      transition={{
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      className="w-16 h-16 rounded-xl bg-gradient-to-r from-primary to-primary/80 transform-gpu"
+    />
+  </div>
+);
+
+const PageTransition = ({ children }) => {
+  const location = useLocation();
+  return (
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? (
+    <PageTransition>{children}</PageTransition>
+  ) : (
+    <Navigate to="/login" />
+  );
+};
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route 
+          path="/login" 
+          element={
+            isAuthenticated ? (
+              <Navigate to="/" />
+            ) : (
+              <PageTransition>
+                <Login />
+              </PageTransition>
+            )
+          } 
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Overview />} />
+          <Route path="status" element={<ViewStatus />} />
+          <Route path="add-candidate" element={<AddCandidate />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <ThemeProvider>
+        <AuthProvider>
+          <Suspense fallback={<LoadingScreen />}>
+            <div className="min-h-screen bg-background text-white">
+              <AppContent />
+            </div>
+          </Suspense>
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
+  );
+}
+
+export default App;

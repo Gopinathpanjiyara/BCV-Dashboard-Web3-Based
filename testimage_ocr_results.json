@@ -1,0 +1,9 @@
+{
+    "file_path": "d:\\BVP\\Dsh3\\AutoMation\\testimage.png",
+    "full_text": "Name\n\nBirthday\n\nGender\n\nContact info\n\nEmail\n\nAman\n\nOctober 14, 1999\n\nMale\n\namanplayz2004@gmail.com\nkiran5234devi@gmail.com\n",
+    "keyword": "email",
+    "keyword_results": [
+        "Email"
+    ],
+    "result_count": 1
+}
