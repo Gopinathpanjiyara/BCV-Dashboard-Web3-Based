@@ -25,29 +25,28 @@ export const AuthProvider = ({ children }) => {
   ];
 
   const login = (username, password) => {
-    // For demo purposes, we'll still keep the simple test/test login
-    // Make a POST request to the login endpoint
-    fetch('http://localhost:8000/api/login/', {
-      mode:  'cors',
+    // Return the Promise from fetch
+    return fetch('http://localhost:8000/api/login/', {
+      mode: 'cors',
       method: 'POST',
       headers: {
-      'Content-Type': 'application/json'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ username, password })
     })
     .then(response => response.json())
     .then(data => {
       if (data.key) {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userName', username);
-      localStorage.setItem('token', data.key);
-      console.log('Login successful '+data.key);
-      setUserName(username);
-      setIsAuthenticated(true);
-      navigate('/');
-      return true;
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userName', username);
+        localStorage.setItem('token', data.key);
+        console.log('Login successful '+data.key);
+        setUserName(username);
+        setIsAuthenticated(true);
+        navigate('/');
+        return true;
       } else {
-      return false;
+        return false;
       }
     })
     .catch(error => {
@@ -62,16 +61,20 @@ export const AuthProvider = ({ children }) => {
     
     if (userExists) {
       // In a real application, this would make an API call to set the password
-      // For demo purposes, we'll just simulate success and log the user in
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userName', username);
-      setUserName(username);
-      setIsAuthenticated(true);
-      navigate('/');
-      return true;
+      // For demo purposes, we'll simulate an async operation with a Promise
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('userName', username);
+          setUserName(username);
+          setIsAuthenticated(true);
+          navigate('/');
+          resolve(true);
+        }, 1000); // Simulate network delay
+      });
     }
     
-    return false;
+    return Promise.resolve(false);
   };
 
   const logout = () => {

@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Node.js
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build directories
+/build
+/dist
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE files
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+
+# Other
+README.md
+LICENSE
+*.md
+.DS_Store
+.venv
+AutoMation
+.git 

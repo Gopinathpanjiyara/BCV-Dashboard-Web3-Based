@@ -1,40 +1,63 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
-import { BuildingOfficeIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import logo from '../assets/logo.svg';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isCreatingPassword, setIsCreatingPassword] = useState(false);
   const [isValidatingUsername, setIsValidatingUsername] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login, createPassword } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
     
     if (isCreatingPassword) {
       // Password creation logic
       if (credentials.password !== credentials.confirmPassword) {
         setError('Passwords do not match');
+        setIsLoading(false);
         return;
       }
       
       if (credentials.password.length < 8) {
         setError('Password must be at least 8 characters long');
+        setIsLoading(false);
         return;
       }
       
-      const success = createPassword(credentials.username, credentials.password);
-      if (!success) {
-        setError('Failed to create password. Please try again.');
+      try {
+        const result = await createPassword(credentials.username, credentials.password);
+        if (!result) {
+          setError('Failed to create password. Please try again.');
+        } else {
+          setSuccess('Password created successfully! Redirecting...');
+        }
+      } catch (err) {
+        setError('An error occurred. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
     } else {
       // Normal login
-      const success = login(credentials.username, credentials.password);
-      if (!success) {
-        setError('Invalid credentials');
+      try {
+        const result = await login(credentials.username, credentials.password);
+        if (!result) {
+          setError('Invalid credentials');
+        } else {
+          setSuccess('Login successful! Redirecting...');
+        }
+      } catch (err) {
+        setError('An error occurred. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -105,9 +128,15 @@ const Login = () => {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1, rotateZ: 180 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
-                className="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-4 transform-gpu hover:rotate-6 transition-transform duration-300"
+                className="w-20 h-20 flex items-center justify-center mb-4 transform-gpu hover:rotate-6 transition-transform duration-300"
               >
-                <BuildingOfficeIcon className="w-12 h-12 text-primary" />
+                <motion.img 
+                  src={logo} 
+                  alt="BVC Logo" 
+                  className="w-14 h-14"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                />
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0 }}
@@ -201,13 +230,26 @@ const Login = () => {
 
               {/* Error Message */}
               {error && (
-                <motion.p
+                <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-red-400 text-sm mt-2"
+                  className="flex items-center text-red-400 text-sm mt-2"
                 >
-                  {error}
-                </motion.p>
+                  <XCircleIcon className="h-5 w-5 mr-1.5" />
+                  <p>{error}</p>
+                </motion.div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center text-green-400 text-sm mt-2"
+                >
+                  <CheckCircleIcon className="h-5 w-5 mr-1.5" />
+                  <p>{success}</p>
+                </motion.div>
               )}
 
               {/* Action Buttons */}
@@ -249,22 +291,32 @@ const Login = () => {
                     boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
                   }}
                   whileTap={{ scale: 0.98 }}
-                  className="relative w-full py-3 px-4 bg-gradient-to-r from-primary to-primary/80 text-white rounded-xl font-medium transform-gpu transition-all duration-300 overflow-hidden group focus:outline-none focus:ring-4 focus:ring-primary/30"
+                  disabled={isLoading}
+                  className="relative w-full py-3 px-4 bg-gradient-to-r from-primary to-primary/80 text-white rounded-xl font-medium transform-gpu transition-all duration-300 overflow-hidden group focus:outline-none focus:ring-4 focus:ring-primary/30 disabled:opacity-70"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   <span className="relative z-10 inline-flex items-center justify-center gap-2 font-semibold tracking-wide">
-                    {isCreatingPassword ? 'Create Password' : 'Sign In'}
-                    <motion.svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20" 
-                      fill="currentColor"
-                      initial={false}
-                      animate={{ x: [-2, 2, -2], opacity: [0.7, 1, 0.7] }}
-                      transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                    >
-                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </motion.svg>
+                    {isLoading ? (
+                      <>
+                        <ArrowPathIcon className="h-5 w-5 animate-spin" />
+                        {isCreatingPassword ? 'Creating...' : 'Signing in...'}
+                      </>
+                    ) : (
+                      <>
+                        {isCreatingPassword ? 'Create Password' : 'Sign In'}
+                        <motion.svg 
+                          xmlns="http://www.w3.org/2000/svg" 
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20" 
+                          fill="currentColor"
+                          initial={false}
+                          animate={{ x: [-2, 2, -2], opacity: [0.7, 1, 0.7] }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                        >
+                          <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </motion.svg>
+                      </>
+                    )}
                   </span>
                 </motion.button>
               )}

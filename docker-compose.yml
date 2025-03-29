@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Frontend service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - bvc-network
+    # Uncomment if you need environment variables
+    # environment:
+    #   - REACT_APP_API_URL=http://localhost:8000/api
+
+  # Backend service (commented out - uncomment and adjust as needed)
+  # backend:
+  #   build:
+  #     context: ./backend  # Adjust path as needed
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8000:8000"
+  #   restart: unless-stopped
+  #   networks:
+  #     - bvc-network
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:postgres@db:5432/bvc
+  #   depends_on:
+  #     - db
+
+  # Database service (commented out - uncomment and adjust as needed)
+  # db:
+  #   image: postgres:14-alpine
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - bvc-network
+  #   environment:
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_DB=bvc
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+
+networks:
+  bvc-network:
+    driver: bridge
+
+# Uncomment if using database or other persistent volumes
+# volumes:
+#   postgres_data: 

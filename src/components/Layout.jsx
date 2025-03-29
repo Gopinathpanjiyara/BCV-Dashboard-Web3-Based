@@ -11,9 +11,10 @@ import {
   UserCircleIcon,
   ArrowLeftOnRectangleIcon,
   XMarkIcon,
-  BuildingOfficeIcon,
   BellIcon
 } from '@heroicons/react/24/outline';
+import logo from '../assets/logo.svg';
+import frLogo from '../assets/fr_logo.png';
 
 const Layout = () => {
   const [isHovered, setIsHovered] = useState(false);
@@ -55,16 +56,22 @@ const Layout = () => {
           <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
             <AnimatePresence mode="wait">
               {isHovered ? (
-                <motion.h1 
-                  key="title"
+                <motion.div
+                  key="fullLogo"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
-                  className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent whitespace-nowrap px-2"
+                  className="px-2"
                 >
-                  BVC Dashboard
-                </motion.h1>
+                  <motion.img 
+                    src={frLogo} 
+                    alt="BVC Full Logo" 
+                    className="h-10 filter brightness-0 invert sepia(100%) saturate(10000%) hue-rotate(200deg)"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </motion.div>
               ) : (
                 <motion.div
                   key="icon"
@@ -73,7 +80,12 @@ const Layout = () => {
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ duration: 0.2, ease: [0.4, 0.0, 0.2, 1] }}
                 >
-                  <BuildingOfficeIcon className="w-8 h-8 text-primary transform transition-transform duration-300 ease-in-out hover:scale-110" />
+                  <motion.img 
+                    src={logo} 
+                    alt="BVC Logo" 
+                    className="w-8 h-8 transform transition-transform duration-300 ease-in-out hover:scale-110"
+                    whileHover={{ scale: 1.1 }}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>

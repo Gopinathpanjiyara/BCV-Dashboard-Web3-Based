@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   LinkIcon,
@@ -7,7 +7,14 @@ import {
   DocumentCheckIcon,
   ClockIcon,
   ExclamationTriangleIcon,
-  BellIcon
+  BellIcon,
+  CheckIcon,
+  DocumentTextIcon,
+  AcademicCapIcon,
+  BriefcaseIcon,
+  IdentificationIcon,
+  HomeIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 
 // Import notification context
@@ -136,11 +143,178 @@ const VerificationCard = ({ candidate, onClick }) => (
   </motion.div>
 );
 
+const VerificationLinkModal = ({ isOpen, onClose }) => {
+  const [verificationTypes, setVerificationTypes] = useState({
+    identity: false,
+    address: false,
+    education: false,
+    employment: false,
+    criminal: false,
+    credit: false,
+    reference: false
+  });
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [copied, setCopied] = useState(false);
+  const linkInputRef = useRef(null);
+
+  const verificationOptions = [
+    { id: 'identity', label: 'Identity Verification', icon: IdentificationIcon },
+    { id: 'address', label: 'Address Verification', icon: HomeIcon },
+    { id: 'education', label: 'Education Verification', icon: AcademicCapIcon },
+    { id: 'employment', label: 'Employment Verification', icon: BriefcaseIcon },
+    { id: 'criminal', label: 'Criminal Record Check', icon: DocumentTextIcon },
+    { id: 'credit', label: 'Credit Check', icon: DocumentCheckIcon },
+    { id: 'reference', label: 'Reference Check', icon: ClipboardDocumentCheckIcon }
+  ];
+
+  const handleCheckboxChange = (id) => {
+    setVerificationTypes(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const generateLink = () => {
+    // Create array of selected verification types
+    const selected = Object.keys(verificationTypes).filter(key => verificationTypes[key]);
+    
+    if (selected.length === 0) {
+      alert("Please select at least one verification type");
+      return;
+    }
+    
+    // Generate a random hash for the link
+    const hash = Math.random().toString(36).substring(2, 15);
+    
+    // Create the verification link with selected types as query parameters
+    const baseUrl = window.location.origin;
+    const queryParams = selected.join(',');
+    const link = `${baseUrl}/verification/${hash}?types=${queryParams}`;
+    
+    setGeneratedLink(link);
+  };
+
+  const copyToClipboard = () => {
+    if (linkInputRef.current) {
+      linkInputRef.current.select();
+      document.execCommand('copy');
+      setCopied(true);
+      
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-background-lighter p-6 rounded-xl shadow-neumorph max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 className="text-2xl font-bold text-white mb-4">Generate Verification Link</h2>
+            <p className="text-gray-400 mb-6">Select the verification types required for this candidate:</p>
+            
+            <div className="space-y-3 mb-6">
+              {verificationOptions.map(option => (
+                <div 
+                  key={option.id}
+                  className="flex items-center p-3 rounded-lg bg-background/50 hover:bg-background/80 cursor-pointer transition-colors"
+                  onClick={() => handleCheckboxChange(option.id)}
+                >
+                  <div className="flex items-center justify-center mr-3">
+                    <div 
+                      className={`w-5 h-5 rounded border ${
+                        verificationTypes[option.id] 
+                          ? 'bg-primary border-primary' 
+                          : 'border-gray-500'
+                      } flex items-center justify-center`}
+                    >
+                      {verificationTypes[option.id] && <CheckIcon className="w-4 h-4 text-white" />}
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <option.icon className="w-5 h-5 text-gray-400 mr-2" />
+                    <span className="text-white">{option.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-between items-center mb-6">
+              <button
+                onClick={generateLink}
+                className="px-4 py-2 bg-primary hover:bg-primary/80 rounded-lg text-white transition-colors duration-200"
+              >
+                Generate Link
+              </button>
+            </div>
+            
+            {generatedLink && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Verification Link:
+                </label>
+                <div className="flex">
+                  <input
+                    ref={linkInputRef}
+                    type="text"
+                    value={generatedLink}
+                    readOnly
+                    className="flex-grow bg-background/50 text-white border border-gray-700 rounded-l-lg px-4 py-2 focus:ring-primary focus:border-primary"
+                  />
+                  <button
+                    onClick={copyToClipboard}
+                    className={`px-4 py-2 ${
+                      copied ? 'bg-green-600' : 'bg-primary'
+                    } text-white rounded-r-lg transition-colors duration-200 flex items-center`}
+                  >
+                    {copied ? (
+                      <>
+                        <CheckIcon className="w-4 h-4 mr-1" /> Copied
+                      </>
+                    ) : (
+                      'Copy'
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Share this link with the candidate to initiate the verification process.</p>
+              </div>
+            )}
+            
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const Overview = () => {
   const navigate = useNavigate();
   const [timeFilter, setTimeFilter] = useState('7');
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
   
   // Use the notification context
   const { 
@@ -307,7 +481,10 @@ const Overview = () => {
             )}
           </div>
           
-          <button className="p-2 hover:bg-background-lighter rounded-lg transition-colors duration-200">
+          <button 
+            className="p-2 hover:bg-background-lighter rounded-lg transition-colors duration-200"
+            onClick={() => setShowLinkModal(true)}
+          >
             <LinkIcon className="w-5 h-5 text-gray-400 hover:text-primary" />
           </button>
         </div>
@@ -350,6 +527,11 @@ const Overview = () => {
           onClose={() => setSelectedCandidate(null)}
         />
       )}
+
+      <VerificationLinkModal 
+        isOpen={showLinkModal} 
+        onClose={() => setShowLinkModal(false)} 
+      />
     </div>
   );
 };

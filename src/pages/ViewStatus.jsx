@@ -54,11 +54,11 @@ const CandidateCard = ({ candidate, onClick }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative bg-background-lighter rounded-xl p-6 shadow-neumorph hover:shadow-neumorph-inset transition-shadow duration-300 cursor-pointer"
+      className="relative bg-background-lighter rounded-xl p-4 shadow-neumorph hover:shadow-neumorph-inset transition-shadow duration-300 cursor-pointer mb-4"
       onClick={() => onClick(candidate)}
     >
-      <div className="flex flex-col items-center">
-        <div className="relative">
+      <div className="flex items-center">
+        <div className="relative flex-shrink-0 mr-4">
           <CircularProgress progress={candidate.progress} status={candidate.status} />
           <img
             src={candidate.photo}
@@ -66,14 +66,28 @@ const CandidateCard = ({ candidate, onClick }) => {
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full object-cover border-4 border-background"
           />
         </div>
-        <div className="mt-4 text-center">
-          <h3 className="text-lg font-semibold text-white">{candidate.name}</h3>
-          <p className="text-gray-400">{candidate.mobile}</p>
-          <div className={`mt-2 px-3 py-1 rounded-full text-sm inline-block
-            ${candidate.status === 'Verified' ? 'bg-green-900/30 text-green-400' :
-              candidate.status === 'Pending' ? 'bg-blue-900/30 text-blue-400' :
-              'bg-red-900/30 text-red-400'}`}>
-            {candidate.status}
+        <div className="flex-grow">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-xl font-semibold text-white">{candidate.name}</h3>
+              <p className="text-gray-400">{candidate.mobile}</p>
+              <p className="text-gray-500">{candidate.position} • {candidate.location}</p>
+            </div>
+            <div className={`px-4 py-2 rounded-full text-sm font-medium
+              ${candidate.status === 'Verified' ? 'bg-green-900/30 text-green-400' :
+                candidate.status === 'Pending' ? 'bg-blue-900/30 text-blue-400' :
+                'bg-red-900/30 text-red-400'}`}>
+              {candidate.status}
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400">Started: {candidate.startDate}</p>
+              <p className="text-sm text-gray-400">Expected Completion: {candidate.expectedCompletion}</p>
+            </div>
+            <button className="text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/20 px-3 py-1 rounded-lg transition-colors text-sm">
+              View Details
+            </button>
           </div>
         </div>
       </div>
@@ -517,9 +531,9 @@ const ViewStatus = () => {
         </div>
       )}
 
-      {/* Candidate cards grid */}
+      {/* Candidate list (previously grid) */}
       {displayedCandidates.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {currentCandidates.map((candidate) => (
             <CandidateCard
               key={candidate.id}
